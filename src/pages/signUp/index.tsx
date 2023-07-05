@@ -14,13 +14,6 @@ export default function SignUp() {
   const [fontSize, setFontSize] = useState("");
   const [age, setAge] = useState("");
   const [birthday, setBirthday] = useState("");
-  const [isAlert, setIsAlert] = useState(false);
-
-  const categorySelectHandler = (category: string, e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (selectedCategory.includes(category)) return setSelectedCategory(selectedCategory.filter((v) => v !== category));
-    if (selectedCategory.length < 3) return setSelectedCategory((prev) => [...prev, category]);
-  };
 
   const imageUpLoadHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -28,6 +21,11 @@ export default function SignUp() {
     if (files && files[0]) {
       setFile(files[0]);
     }
+  };
+  const categorySelectHandler = (category: string, e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (selectedCategory.includes(category)) return setSelectedCategory(selectedCategory.filter((v) => v !== category));
+    if (selectedCategory.length < 3) return setSelectedCategory((prev) => [...prev, category]);
   };
   const ageHandler = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setAge(e.target.value);
@@ -48,7 +46,6 @@ export default function SignUp() {
   const onSubmitHandler = async (e: FormEvent) => {
     e.preventDefault();
     if (!nameRef.current) return;
-    if (!file) return;
     if (
       !file ||
       nameRef.current.value.length < 2 ||
@@ -60,22 +57,18 @@ export default function SignUp() {
       age === "" ||
       birthday === ""
     ) {
-      return setIsAlert(true);
+      return alert("빈 항목을 작성해주세요.");
     }
-    setIsAlert(false);
     const formData = new FormData();
-    const payloadData = JSON.stringify({
-      name: nameRef.current.value,
-      birthday,
-      sex,
-      category: selectedCategory,
-      age,
-    });
-    const image = JSON.stringify(file);
-    formData.append("image", image);
-    formData.append("payload", payloadData);
 
-    const { data } = await profileAPI.create(image, payloadData);
+    formData.append("file", file);
+    formData.append("name", nameRef.current.value);
+    formData.append("birthday", birthday);
+    formData.append("sex", sex);
+    formData.append("category", JSON.stringify(selectedCategory));
+    formData.append("age", age);
+
+    const { data } = await profileAPI.create(formData);
     if (data.code === 200) return navigate("/");
     else return alert("프로필 생성 실패");
   };
@@ -104,8 +97,9 @@ export default function SignUp() {
         <SignupRadio type="화면 색상" state={isDark} onChange={darkModeHandler} />
         <SignupRadio type="글자 크기" state={fontSize} onChange={fontSizeHandler} />
         <SignupRadio type="성별" state={sex} onChange={genderHandler} />
-        <button className="mt-10 font-bold border border-black py-2">제출하기</button>
-        {isAlert && <div className="text-red-500 font-bold mt-5">빈 항목을 작성해주세요.</div>}
+        <button className="mt-10 font-bold border border-black py-2" type="submit">
+          제출하기
+        </button>
       </form>
     </section>
   );

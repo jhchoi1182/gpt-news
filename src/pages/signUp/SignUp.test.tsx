@@ -5,25 +5,25 @@ import { renderWithRouter } from "../../utils/test/testConfig";
 import userEvent from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
 
-// test("이미지 테스트", async () => {
-//   const { user } = renderWithRouter(<SignUp />);
+const file = new File(["test image"], "test.png", { type: "image/png" });
+const fileList = {
+  0: file,
+  length: 1,
+  item: () => file,
+};
+const mockAlert = jest.spyOn(window, "alert").mockImplementation(() => {});
 
-//   const file = new File(["test image"], "test.png", { type: "image/png" });
-//   const fileList = {
-//     0: file,
-//     length: 1,
-//     item: () => file,
-//   };
+test("이미지 테스트", async () => {
+  const { user } = renderWithRouter(<SignUp />);
 
-//   const inputElement = screen.getByLabelText("프로필 이미지", { exact: false }) as HTMLInputElement;
-//   Object.defineProperty(inputElement, "files", {
-//     value: fileList,
-//   });
+  const inputElement = screen.getByLabelText("프로필 이미지", { exact: false }) as HTMLInputElement;
+  Object.defineProperty(inputElement, "files", {
+    value: fileList,
+  });
 
-//   user.upload(inputElement, file);
-
-//   expect(inputElement.files?.[0]).toEqual(file);
-// });
+  await user.upload(inputElement, file);
+  expect(inputElement.files?.[0]).toEqual(file);
+});
 
 test("이름 입력 테스트", async () => {
   const { user } = renderWithRouter(<SignUp />);
@@ -129,7 +129,7 @@ test("성별 선택 테스트", async () => {
 });
 
 test("나이 선택 테스트", async () => {
-  const { user } = renderWithRouter(<SignUp />);
+  const { user } = renderWithRouter(<SignUp />, { route: "/signup" });
 
   const selectElement = screen.getByLabelText(/나이/);
   await user.selectOptions(selectElement, "10");
@@ -142,66 +142,54 @@ test("나이 선택 테스트", async () => {
 });
 
 test("생년월일 선택 테스트", async () => {
-  const { user } = renderWithRouter(<SignUp />);
+  const { user } = renderWithRouter(<SignUp />, { route: "/signup" });
 
   const datePicker = screen.getByLabelText(/생년월일/i) as HTMLInputElement;
   await user.type(datePicker, "1991-10-08");
   expect(datePicker.value).toBe("1991-10-08");
 });
 
-// test("하나라도 입력 안 돼 있을 시 제출되면 안 됨(근데 되고 있음...)", async () => {
-//   const { user } = renderWithRouter(<SignUp />);
+test("하나라도 입력 안 돼 있을 시 제출되면 안 됨", async () => {
+  const { user } = renderWithRouter(<SignUp />, { route: "/signup" });
 
-//   const submitButton = screen.getByRole("button", { name: "제출하기" });
-//   await user.click(submitButton);
+  const submitButton = screen.getByRole("button", { name: "제출하기" });
+  await user.click(submitButton);
 
-//   await waitFor(() => expect(window.location.pathname).toEqual("/"));
-// });
+  const mockAlert = jest.spyOn(window, "alert").mockImplementation(() => {});
+  expect(mockAlert).toBeCalledTimes(1);
+});
 
-// test("status 200일 때 /으로 이동", async () => {
-//   rest.post(`${process.env.REACT_APP_MY_API}/profile/create_profile`, (req, res, ctx) => {
-//     return res(ctx.json({ code: 200 }));
-//   });
-//   const { user } = renderWithRouter(<SignUp />);
-//   // const user = userEvent.setup();
-//   // render(
-//   //   <BrowserRouter>
-//   //     <SignUp />
-//   //   </BrowserRouter>
-//   // );
-//   expect(window.location.pathname).toEqual("/");
+test("status 200일 때 /으로 이동", async () => {
+  rest.post(`${process.env.REACT_APP_MY_API}/profile/create_profile`, (req, res, ctx) => {
+    return res(ctx.json({ code: 200 }));
+  });
+  const { user } = renderWithRouter(<SignUp />, { route: "/signup" });
 
-//   const submitButton = screen.getByRole("button", { name: "제출하기" });
+  const inputElement = screen.getByLabelText("프로필 이미지", { exact: false }) as HTMLInputElement;
+  const submitButton = screen.getByRole("button", { name: "제출하기" });
 
-//   await user.click(submitButton);
-//   screen.getByText("빈 항목을 작성해주세요.");
-//   // fireEvent.click(submitButton);
+  await user.click(submitButton);
 
-//   const file = new File(["test image"], "test.png", { type: "image/png" });
-//   const fileList = {
-//     0: file,
-//     length: 1,
-//     item: () => file,
-//   };
+  expect(mockAlert).toBeCalledTimes(1);
 
-//   const inputElement = screen.getByLabelText("프로필 이미지", { exact: false }) as HTMLInputElement;
-//   Object.defineProperty(inputElement, "files", {
-//     value: fileList,
-//   });
+  Object.defineProperty(inputElement, "files", {
+    value: fileList,
+  });
+  await user.upload(inputElement, file);
+  await user.type(screen.getByLabelText("이름", { exact: false }), "테스트");
+  await user.click(screen.getByRole("button", { name: "entertainment" }));
+  await user.selectOptions(screen.getByLabelText(/나이/), "10");
+  await user.click(screen.getByLabelText("small"));
+  await user.click(screen.getByLabelText("dark"));
+  await user.click(screen.getByLabelText("male"));
 
-//   user.upload(inputElement, file);
-//   await user.type(screen.getByLabelText("이름", { exact: false }), "테스트");
-//   await user.click(screen.getByRole("button", { name: "entertainment" }));
-//   await user.selectOptions(screen.getByLabelText(/나이/), "10");
-//   await user.click(screen.getByLabelText("small"));
-//   await user.click(screen.getByLabelText("dark"));
-//   await user.click(screen.getByLabelText("male"));
+  await user.click(submitButton);
+  expect(mockAlert).toBeCalledTimes(2);
 
-//   await user.click(submitButton);
-//   screen.getByText("빈 항목을 작성해주세요.");
+  await user.type(screen.getByLabelText(/생년월일/i), "1991-10-08");
+  await user.click(submitButton);
 
-//   await user.type(screen.getByLabelText(/생년월일/i), "1991-10-08");
-//   await user.click(submitButton);
-
-//   expect(window.location.pathname).toEqual("/");
-// });
+  // const postMock = jest.spyOn(rest, "post");
+  // expect(postMock).toHaveBeenCalledWith(`${process.env.REACT_APP_MY_API}/profile/create_profile`, expect.any(Function));
+  // expect(postMock).toBeCalledTimes(1);
+});

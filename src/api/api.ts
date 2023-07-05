@@ -30,13 +30,10 @@ export const authAPI = {
 };
 
 export const profileAPI = {
-  create: async (image: string, payload: string) => {
+  create: async (payload: FormData) => {
     return await instance.post(
       "/profile/create_profile",
-      {
-        image,
-        payload,
-      },
+      { payload },
       {
         headers: {
           "Content-Type": "multipart/form-data",

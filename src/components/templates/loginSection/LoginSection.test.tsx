@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import LoginSection from ".";
 import userEvent from "@testing-library/user-event";
 import { server } from "../../../mocks/server";
@@ -17,9 +17,10 @@ describe("로그인 기능 테스트", () => {
   test("로그인 성공 시 200이면 /으로 이동", async () => {
     await user.click(loginButton);
 
-    renderWithRouter(<KakaoRedirect />);
+    renderWithRouter(<KakaoRedirect />, { route: "/kakao" });
 
-    screen.getByText("로딩중");
+    const loading = await screen.findByText("로딩중");
+    expect(loading).toBeInTheDocument();
 
     expect(window.location.pathname).toEqual("/");
   });
@@ -28,9 +29,10 @@ describe("로그인 기능 테스트", () => {
     server.use(rest.post(url, (req, res, ctx) => res.once(ctx.json({ data: { kakao_access_token: "1" }, code: 201 }))));
     await user.click(loginButton);
 
-    renderWithRouter(<KakaoRedirect />);
+    renderWithRouter(<KakaoRedirect />, { route: "/kakao" });
 
-    screen.getByText("로딩중");
+    const loading = await screen.findByText("로딩중");
+    expect(loading).toBeInTheDocument();
 
     expect(window.location.pathname).toEqual("/signup");
   });
@@ -39,13 +41,11 @@ describe("로그인 기능 테스트", () => {
     server.use(rest.post(url, (req, res, ctx) => res.once(ctx.json({ data: { kakao_access_token: "1" }, code: 400 }))));
     await user.click(loginButton);
 
-    renderWithRouter(<KakaoRedirect />);
+    renderWithRouter(<KakaoRedirect />, { route: "/kakao" });
 
-    screen.getByText("로딩중");
+    const loading = await screen.findByText("로딩중");
+    expect(loading).toBeInTheDocument();
 
-    // const errorAlert = screen.getByRole("alert");
-    // screen.getByText("로그인 에러");
-    // expect(errorAlert).toBeInTheDocument();
     expect(window.location.pathname).toEqual("/");
   });
 });
