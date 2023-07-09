@@ -18,6 +18,6 @@ test("로그인 페이지 레이아웃 테스트", () => {
   expect(logo).toBeInTheDocument();
   expect(liTags.length).toBe(3);
   screen.getByText("뉴칩스로 나의 성장을 기대해보세요.");
-  screen.getByText("비밀번호 찾기");
   screen.getByText("이메일 찾기");
+  screen.getByText("비밀번호 찾기");
 });

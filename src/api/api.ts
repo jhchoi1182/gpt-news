@@ -31,15 +31,7 @@ export const authAPI = {
 
 export const profileAPI = {
   create: async (payload: FormData) => {
-    return await instance.post(
-      "/profile/create_profile",
-      { payload },
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    return await instance.post("/profile/create_profile", payload);
   },
 };
 
